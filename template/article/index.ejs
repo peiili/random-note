@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%- title %></title>
+    <meta name="description" content="<%- description %>">
+    <meta name="keywords" content="<%- keywords %>">
+    <style>
+            body {
+      font-family: 'Open Sans', sans-serif; 
+      margin: 0;
+      padding: 20px;
+      background-color: #f0f0f0; 
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 40px;
+      color: #333;
+      font-size: 2.5rem; /* Increased heading size */
+      line-height: initial;
+    }
+
+    article {
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      padding: 40px;
+      margin-bottom: 50px;
+      line-height: 2em;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    @media screen and (max-width: 768px) {  
+        article {  
+            padding: 20px;
+        }  
+    }
+    </style>
+</head>
+<body>
+    <article>
+        <h1><%- title %></h1>
+        <%- content %>
+    </article>
+</body>
+</html>
