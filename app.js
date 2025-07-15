@@ -13,6 +13,7 @@ app.use((req,res,next)=>{
     req.self = self
     next()
 })
+app.use('/libs',express.static(path.join(__dirname,'assets/libs')))
 
 const bodyParser = require('body-parser')
 app.use(bodyParser.urlencoded({ extended: false }))
