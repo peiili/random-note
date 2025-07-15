@@ -2,12 +2,12 @@ const path = require('path')
 const express = require('express')
 const app = express()
 const viewRoute = require('./router')
-const db = require('./db')
+// const db = require('./db')
 
 const self = {
     accessToken: {},
     hostToWebsite: {},
-    db: db,
+   // db: db,
 }
 app.use((req,res,next)=>{
     req.self = self
