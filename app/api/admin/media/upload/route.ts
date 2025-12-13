@@ -9,7 +9,7 @@ import { existsSync } from 'fs';
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session) {
+    if (!session || !session.user) {
       return NextResponse.json({ error: '未授权' }, { status: 401 });
     }
 

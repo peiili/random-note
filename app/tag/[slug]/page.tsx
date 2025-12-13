@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import ArticleCard from '@/components/ArticleCard';
 import Pagination from '@/components/Pagination';
+import Link from 'next/link';
 
 const ARTICLES_PER_PAGE = 10;
 
@@ -115,9 +116,9 @@ export default async function TagPage({
     <div className="max-w-6xl mx-auto px-4 py-8">
       <div className="mb-8">
         <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
-          <a href="/" className="hover:text-blue-600">首页</a>
+          <Link href="/" className="hover:text-blue-600">首页</Link>
           <span>/</span>
-          <a href="/tags" className="hover:text-blue-600">标签</a>
+          <Link href="/tags" className="hover:text-blue-600">标签</Link>
           <span>/</span>
           <span className="text-gray-900">#{tag.name}</span>
         </div>

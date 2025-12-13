@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { markdownToHtml, formatDate } from '@/lib/utils';
 import Link from 'next/link';
 import CommentList from '@/components/CommentList';
+import Image from 'next/image';
 
 async function getArticle(slug: string) {
   const article = await prisma.article.findUnique({
@@ -132,7 +133,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
           <div className="flex items-center gap-4 text-gray-600 text-sm mb-4">
             <span className="flex items-center gap-2">
               {article.author.avatarUrl && (
-                <img
+                <Image
                   src={article.author.avatarUrl}
                   alt={article.author.displayName}
                   className="w-8 h-8 rounded-full"

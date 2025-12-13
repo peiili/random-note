@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -150,7 +151,7 @@ export default function AdminLoginPage() {
 
           {/* 返回首页 */}
           <div className="mt-6 text-center">
-            <a
+            <Link
               href="/"
               className="text-sm text-gray-600 hover:text-blue-600 transition inline-flex items-center gap-1"
             >
@@ -158,7 +159,7 @@ export default function AdminLoginPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
               </svg>
               返回首页
-            </a>
+            </Link>
           </div>
         </div>
 

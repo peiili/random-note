@@ -129,7 +129,7 @@ export default async function UsersPage() {
                           key={ur.roleId}
                           className="px-2 py-1 text-xs font-medium rounded bg-purple-100 text-purple-800"
                         >
-                          {ur.role.displayName}
+                          {ur.role.name}
                         </span>
                       ))}
                     </div>
@@ -157,7 +157,18 @@ export default async function UsersPage() {
                     {formatDate(user.createdAt)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <UserActions user={user} />
+                    <UserActions
+                      user={{
+                        ...user,
+                        userRoles: user.userRoles.map((ur) => ({
+                          ...ur,
+                          role: {
+                            ...ur.role,
+                            displayName: ur.role.name, // fallback if displayName is missing
+                          },
+                        })),
+                      }}
+                    />
                   </td>
                 </tr>
               ))}
