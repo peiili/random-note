@@ -1,0 +1,72 @@
+name: Build Next.js Application
+
+# 触发条件：推送到 main 分支时
+on:
+  push:
+    branches:
+      - main
+
+# 并发控制：同一分支只运行最新的构建，取消旧的构建
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build and Upload Artifacts
+    runs-on: ubuntu-22.04
+
+    steps:
+      # 1. 检出代码
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. 设置 Node.js 环境
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.09'
+          cache: 'npm'
+
+      # 3. 安装依赖
+      - name: Install dependencies
+        run: npm ci
+
+      # 4. 生成 Prisma Client (不需要数据库连接)
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
+      # 5. 构建 Next.js 应用
+      - name: Build Next.js application
+        run: npm run build
+        env:
+          # Next.js 构建时的环境变量
+          NODE_ENV: production
+          # 如果构建时需要 DATABASE_URL（即使不连接），可以提供一个占位符
+          DATABASE_URL: "mysql://placeholder:placeholder@localhost:3306/placeholder"
+
+      # 6. 上传构建产物
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: nextjs-build-${{ github.sha }}
+          path: |
+            .next/
+            package.json
+            package-lock.json
+            prisma/
+            public/
+          retention-days: 7
+          compression-level: 6
+
+      # 7. 打印构建信息
+      - name: Build summary
+        run: |
+          echo "### Build Information" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Branch**: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Node Version**: $(node -v)" >> $GITHUB_STEP_SUMMARY
+          echo "- **NPM Version**: $(npm -v)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Build artifacts uploaded successfully! ✅" >> $GITHUB_STEP_SUMMARY
