@@ -5,6 +5,8 @@ import Link from 'next/link';
 import CommentList from '@/components/CommentList';
 import Image from 'next/image';
 
+export const dynamic = 'force-dynamic';
+
 async function getArticle(slug: string) {
   const article = await prisma.article.findUnique({
     where: {

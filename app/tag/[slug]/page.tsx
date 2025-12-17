@@ -4,6 +4,8 @@ import ArticleCard from '@/components/ArticleCard';
 import Pagination from '@/components/Pagination';
 import Link from 'next/link';
 
+export const dynamic = 'force-dynamic';
+
 const ARTICLES_PER_PAGE = 10;
 
 async function getTagWithArticles(slug: string, page: number = 1) {

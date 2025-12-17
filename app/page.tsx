@@ -2,6 +2,8 @@ import { prisma } from '@/lib/prisma';
 import ArticleCard from '@/components/ArticleCard';
 import Pagination from '@/components/Pagination';
 
+export const dynamic = 'force-dynamic';
+
 const ARTICLES_PER_PAGE = 10;
 
 async function getArticles(page: number = 1) {
