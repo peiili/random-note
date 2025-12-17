@@ -3,6 +3,8 @@ import { formatDate } from '@/lib/utils';
 import Link from 'next/link';
 import CommentActions from '@/components/CommentActions';
 
+export const dynamic = 'force-dynamic';
+
 const ITEMS_PER_PAGE = 20;
 
 export default async function CommentsPage({

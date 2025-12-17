@@ -19,6 +19,18 @@
       "ANTHROPIC_BASE_URL": "https://www.88code.org/api",
       "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1"
     },
-    "alwaysThinkingEnabled": true
+    "alwaysThinkingEnabled": true,
+        "hooks": {
+      "Stop": [
+        {
+          "hooks": [
+            {
+              "type": "command",
+              "command": "curl -X POST http://192.168.31.205:8080/webhook -H 'Content-Type: application/json' -d '{\"title\":\"测试通知\",\"message\":\"Hello from mac-notice!\",\"sound\":\"Glass\"}'"
+            }
+          ]
+        }
+      ]
+    }
 
 }

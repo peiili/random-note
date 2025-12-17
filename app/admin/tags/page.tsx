@@ -3,6 +3,8 @@ import Link from 'next/link';
 import TagActions from '@/components/TagActions';
 import TagForm from '@/components/TagForm';
 
+export const dynamic = 'force-dynamic';
+
 export default async function TagsPage() {
   const tags = await prisma.tag.findMany({
     orderBy: { createdAt: 'desc' },

@@ -11,7 +11,11 @@
       "Bash(npm run build)",
       "Bash(kill:*)",
       "Bash(wait)",
-      "Bash(npx prisma generate)"
+      "Bash(npx prisma generate)",
+      "Bash(openssl rand:*)",
+      "Bash(time npm run build:*)",
+      "Bash(npm start --help)",
+      "Bash(npm --version:*)"
     ],
     "deny": [],
     "ask": []

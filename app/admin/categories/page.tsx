@@ -3,6 +3,8 @@ import Link from 'next/link';
 import CategoryActions from '@/components/CategoryActions';
 import CategoryForm from '@/components/CategoryForm';
 
+export const dynamic = 'force-dynamic';
+
 export default async function CategoriesPage() {
   const categories = await prisma.category.findMany({
     orderBy: { createdAt: 'desc' },

@@ -3,6 +3,8 @@ import { formatDate } from '@/lib/utils';
 import Link from 'next/link';
 import UserActions from '@/components/UserActions';
 
+export const dynamic = 'force-dynamic';
+
 export default async function UsersPage() {
   const users = await prisma.user.findMany({
     orderBy: { createdAt: 'desc' },

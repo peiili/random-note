@@ -3,6 +3,8 @@ import Link from 'next/link';
 import { formatDate } from '@/lib/utils';
 import DeleteArticleButton from '@/components/DeleteArticleButton';
 
+export const dynamic = 'force-dynamic';
+
 const ITEMS_PER_PAGE = 20;
 
 export default async function ArticlesPage({
