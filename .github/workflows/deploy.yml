@@ -1,0 +1,194 @@
+name: Deploy to Production
+
+# 当 build workflow 完成时触发
+on:
+  workflow_run:
+    workflows: ["Build Next.js Application"]
+    types: [completed]
+    branches: [main]
+
+# 并发控制：同一分支只运行最新的部署，取消旧的部署
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Deploy to Server
+    runs-on: ubuntu-22.04
+    # 只有在构建成功时才执行部署
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+      # 1. 检出代码（需要获取部署脚本等）
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. 下载构建产物
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: nextjs-build-${{ github.event.workflow_run.head_sha }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ github.event.workflow_run.id }}
+
+      # 2.5. 验证下载的产物
+      - name: Verify downloaded artifacts
+        run: |
+          echo "🔍 Verifying downloaded artifacts..."
+          echo ""
+
+          echo "📁 Downloaded files:"
+          ls -lh
+          echo ""
+
+          # 检查必需的目录和文件
+          MISSING=()
+
+          if [ ! -d ".next" ]; then
+            echo "❌ .next/ directory is MISSING!"
+            MISSING+=(".next/")
+          else
+            echo "✅ .next/ directory found"
+            du -sh .next/
+          fi
+
+          [ -f "package.json" ] && echo "✅ package.json found" || MISSING+=("package.json")
+          [ -f "package-lock.json" ] && echo "✅ package-lock.json found" || MISSING+=("package-lock.json")
+          [ -d "prisma" ] && echo "✅ prisma/ directory found" || MISSING+=("prisma/")
+          [ -d "public" ] && echo "✅ public/ directory found" || MISSING+=("public/")
+
+          if [ ${#MISSING[@]} -gt 0 ]; then
+            echo ""
+            echo "❌ ERROR: Missing required files/directories:"
+            printf '  - %s\n' "${MISSING[@]}"
+            echo ""
+            echo "💡 This usually means the build artifacts were not uploaded correctly."
+            echo "   Check the build workflow logs for errors."
+            exit 1
+          fi
+
+          echo ""
+          echo "✅ All required artifacts verified successfully!"
+
+      # 3. 打包产物
+      - name: Package build files
+        run: |
+          echo "Packaging build artifacts..."
+          tar -czf deploy.tar.gz .next package.json package-lock.json prisma public
+          ls -lh deploy.tar.gz
+
+      # 4. 部署到服务器
+      - name: Deploy to server via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          script: |
+            echo "🚀 Starting deployment..."
+
+            # 设置应用目录
+            APP_DIR="${{ secrets.DEPLOY_PATH || '/var/www/blog' }}"
+
+            # 创建目录（如果不存在）
+            mkdir -p $APP_DIR
+            cd $APP_DIR
+
+            echo "📦 Current directory: $(pwd)"
+
+      # 5. 上传构建文件
+      - name: Upload build files to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          source: "deploy.tar.gz"
+          target: ${{ secrets.DEPLOY_PATH || '/var/www/blog' }}
+
+      # 6. 解压并重启应用
+      - name: Extract and restart application
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          script: |
+            set -e
+
+            APP_DIR="${{ secrets.DEPLOY_PATH || '/var/www/blog' }}"
+            cd $APP_DIR
+
+            echo "📂 Extracting files..."
+            tar -xzf deploy.tar.gz
+            rm deploy.tar.gz
+
+            echo "📦 Installing production dependencies..."
+            npm ci --omit=dev
+
+            echo "🔄 Applying database migrations..."
+            npx prisma migrate deploy || echo "⚠️  No migrations to apply"
+
+            echo "🔧 Generating Prisma Client..."
+            npx prisma generate
+
+            echo "♻️  Restarting application..."
+            # 使用 PM2 重启（如果你使用 PM2）
+            if command -v pm2 &> /dev/null; then
+              pm2 restart blog || pm2 start npm --name "blog" -- start
+              pm2 save
+            else
+              echo "⚠️  PM2 not found, attempting systemd restart..."
+              sudo systemctl restart blog || echo "❌ Failed to restart via systemd"
+            fi
+
+            echo "✅ Deployment completed successfully!"
+            echo "📊 Application status:"
+            if command -v pm2 &> /dev/null; then
+              pm2 status blog
+            fi
+
+      # 7. 健康检查
+      - name: Health check
+        run: |
+          echo "🏥 Performing health check..."
+          sleep 10
+
+          HEALTH_URL="${{ secrets.HEALTH_CHECK_URL || 'https://your-domain.com' }}"
+
+          if curl -f -s -o /dev/null -w "%{http_code}" "$HEALTH_URL" | grep -q "200\|301\|302"; then
+            echo "✅ Health check passed!"
+          else
+            echo "⚠️  Health check failed or skipped (configure HEALTH_CHECK_URL secret)"
+          fi
+
+      # 8. 部署总结
+      - name: Deployment summary
+        if: always()
+        run: |
+          echo "### Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit**: ${{ github.event.workflow_run.head_sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Branch**: ${{ github.event.workflow_run.head_branch }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Triggered by**: ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status**: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "✅ Deployment completed successfully!" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Deployment failed!" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      # 9. 通知（可选）
+      - name: Send notification on failure
+        if: failure()
+        run: |
+          echo "❌ Deployment failed! Please check the logs."
+          # 你可以在这里添加通知逻辑，例如：
+          # - 发送邮件
+          # - Slack/Discord webhook
+          # - 企业微信/钉钉通知

@@ -14,7 +14,7 @@ concurrency:
 jobs:
   build:
     name: Build and Upload Artifacts
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-20.04
 
     steps:
       # 1. 检出代码
@@ -45,6 +45,27 @@ jobs:
           # 如果构建时需要 DATABASE_URL（即使不连接），可以提供一个占位符
           DATABASE_URL: "mysql://placeholder:placeholder@localhost:3306/placeholder"
 
+      # 5.5. 验证构建产物
+      - name: Verify build output
+        run: |
+          echo "📦 Verifying build artifacts..."
+
+          if [ ! -d ".next" ]; then
+            echo "❌ Error: .next directory not found!"
+            exit 1
+          fi
+
+          echo "✅ .next directory exists"
+          echo "📊 Build output structure:"
+          ls -lh .next/ | head -15
+
+          echo ""
+          echo "📁 .next directory size:"
+          du -sh .next/
+
+          echo ""
+          echo "✅ Build verification completed successfully!"
+
       # 6. 上传构建产物
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
@@ -58,6 +79,21 @@ jobs:
             public/
           retention-days: 7
           compression-level: 6
+
+      # 6.5. 确认上传内容
+      - name: Confirm uploaded artifacts
+        run: |
+          echo "📤 Artifacts uploaded successfully!"
+          echo ""
+          echo "📋 Uploaded files:"
+          echo "  ✓ .next/ (build output)"
+          echo "  ✓ package.json"
+          echo "  ✓ package-lock.json"
+          echo "  ✓ prisma/ (schema)"
+          echo "  ✓ public/ (static files)"
+          echo ""
+          echo "💾 Artifact name: nextjs-build-${{ github.sha }}"
+          echo "📅 Retention: 7 days"
 
       # 7. 打印构建信息
       - name: Build summary
