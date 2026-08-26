@@ -81,7 +81,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   }
 
   return {
-    title: `${data.category.name} - 分类 - 简约博客`,
+    title: `${data.category.name} - 分类 - 数字集合`,
     description: data.category.description || `浏览${data.category.name}分类下的所有文章`,
   };
 }

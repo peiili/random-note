@@ -106,7 +106,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   }
 
   return {
-    title: `${article.title} - 简约博客`,
+    title: `${article.title} - 数字集合`,
     description: article.description || article.excerpt || '',
     keywords: article.keywords || '',
   };

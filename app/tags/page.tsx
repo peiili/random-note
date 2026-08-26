@@ -22,7 +22,7 @@ async function getTags() {
 }
 
 export const metadata = {
-  title: '标签 - 简约博客',
+  title: '标签 - 数字集合',
   description: '浏览所有文章标签',
 };
 

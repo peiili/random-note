@@ -4,7 +4,7 @@ import Providers from "@/components/Providers";
 import ConditionalLayout from "@/components/ConditionalLayout";
 
 export const metadata: Metadata = {
-  title: "简约博客",
+  title: "数字集合",
   description: "一个基于Next.js的现代化博客系统",
 };
 

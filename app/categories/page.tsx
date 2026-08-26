@@ -22,7 +22,7 @@ async function getCategories() {
 }
 
 export const metadata = {
-  title: '分类 - 简约博客',
+  title: '分类 - 数字集合',
   description: '浏览所有文章分类',
 };
 

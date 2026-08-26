@@ -91,7 +91,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   }
 
   return {
-    title: `${data.tag.name} - 标签 - 简约博客`,
+    title: `${data.tag.name} - 标签 - 数字集合`,
     description: data.tag.description || `浏览${data.tag.name}标签下的所有文章`,
   };
 }
